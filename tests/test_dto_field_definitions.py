@@ -1,0 +1,497 @@
+import datetime
+import decimal
+import uuid
+from typing import Optional, List, Any
+
+from litestar.dto import DTOFieldDefinition, DTOField
+from litestar.params import KwargDefinition
+from litestar.typing import FieldDefinition
+
+from litestar_django.dto import DjangoModelDTO
+from tests.some_app.app.models import (
+    Author,
+    ModelWithFields,
+    make_default,
+    Book,
+    Genre,
+    MyStringField,
+)
+
+
+def test_basic_field_types() -> None:
+    dto_type = DjangoModelDTO[ModelWithFields]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs["id"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            int,
+            name="id",
+            kwarg_definition=KwargDefinition(
+                title="ID",
+                lt=9223372036854775807,  # max int value set by django
+                gt=-9223372036854775808,  # min int value set by django
+            ),
+        ),
+    )
+
+    assert field_defs["json_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            Any,
+            name="json_field",
+            kwarg_definition=KwargDefinition(
+                title="json field",
+            ),
+        ),
+    )
+
+    assert field_defs["decimal_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            decimal.Decimal,
+            name="decimal_field",
+            kwarg_definition=KwargDefinition(
+                title="decimal field",
+            ),
+        ),
+    )
+
+    assert field_defs["datetime_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            datetime.datetime,
+            name="datetime_field",
+            kwarg_definition=KwargDefinition(
+                title="datetime field",
+            ),
+        ),
+    )
+
+    assert field_defs["date_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            datetime.date,
+            name="date_field",
+            kwarg_definition=KwargDefinition(
+                title="date field",
+            ),
+        ),
+    )
+
+    assert field_defs["time_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            datetime.time,
+            name="time_field",
+            kwarg_definition=KwargDefinition(
+                title="time field",
+            ),
+        ),
+    )
+
+    assert field_defs["duration_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            datetime.timedelta,
+            name="duration_field",
+            kwarg_definition=KwargDefinition(
+                title="duration field",
+            ),
+        ),
+    )
+
+    assert field_defs["file_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,  # files render as their path, so 'str'
+            name="file_field",
+            kwarg_definition=KwargDefinition(
+                title="file field",
+            ),
+        ),
+    )
+
+    assert field_defs["file_path_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="file_path_field",
+            kwarg_definition=KwargDefinition(
+                title="file path field",
+            ),
+        ),
+    )
+
+    assert field_defs["uuid_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            uuid.UUID,
+            name="uuid_field",
+            kwarg_definition=KwargDefinition(
+                title="uuid field",
+            ),
+        ),
+    )
+
+    assert field_defs["integer_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            int,
+            name="integer_field",
+            kwarg_definition=KwargDefinition(
+                title="integer field",
+                # min/max int values set by django, obtained from the DB (sqlite in our case)
+                lt=9223372036854775807,
+                gt=-9223372036854775808,
+            ),
+        ),
+    )
+
+    assert field_defs["float_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            float,
+            name="float_field",
+            kwarg_definition=KwargDefinition(
+                title="float field",
+            ),
+        ),
+    )
+
+    assert field_defs["bool_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            bool,
+            name="bool_field",
+            kwarg_definition=KwargDefinition(
+                title="bool field",
+            ),
+        ),
+    )
+
+    assert field_defs["char_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="char_field",
+            kwarg_definition=KwargDefinition(
+                title="char field",
+            ),
+        ),
+    )
+
+    assert field_defs["text_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="text_field",
+            kwarg_definition=KwargDefinition(
+                title="text field",
+            ),
+        ),
+    )
+
+    assert field_defs["binary_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            bytes,
+            name="binary_field",
+            kwarg_definition=KwargDefinition(
+                title="binary field",
+            ),
+        ),
+    )
+
+
+def test_constraints() -> None:
+    dto_type = DjangoModelDTO[ModelWithFields]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs["min_1_int_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            int,
+            name="min_1_int_field",
+            kwarg_definition=KwargDefinition(
+                title="min 1 int field",
+                gt=1,
+                lt=9223372036854775807,  # max int value set by django
+            ),
+        ),
+    )
+
+    assert field_defs[
+        "min_2_max_5_int_field"
+    ] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            int,
+            name="min_2_max_5_int_field",
+            kwarg_definition=KwargDefinition(
+                title="min 2 max 5 int field",
+                gt=2,
+                lt=5,
+            ),
+        ),
+    )
+
+    assert field_defs["min_1_str_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="min_1_str_field",
+            kwarg_definition=KwargDefinition(
+                title="min 1 str field",
+                gt=1,
+            ),
+        ),
+    )
+
+    assert field_defs["max_2_str_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="max_2_str_field",
+            kwarg_definition=KwargDefinition(
+                title="max 2 str field",
+                lt=2,
+            ),
+        ),
+    )
+
+
+def test_nullable_field() -> None:
+    dto_type = DjangoModelDTO[ModelWithFields]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs["nullable_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            Optional[str],
+            name="nullable_field",
+            kwarg_definition=KwargDefinition(
+                title="nullable field",
+            ),
+        ),
+    )
+
+
+def test_default() -> None:
+    dto_type = DjangoModelDTO[ModelWithFields]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs["field_with_default"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            Optional[str],
+            name="field_with_default",
+            default="hello",
+            kwarg_definition=KwargDefinition(
+                title="field with default",
+            ),
+        ),
+    )
+
+    assert field_defs[
+        "field_with_default_callable"
+    ] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=make_default,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            Optional[str],
+            name="field_with_default_callable",
+            kwarg_definition=KwargDefinition(
+                title="field with default callable",
+            ),
+        ),
+    )
+
+
+def test_description_from_help_text() -> None:
+    dto_type = DjangoModelDTO[ModelWithFields]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs[
+        "field_with_help_text"
+    ] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="field_with_help_text",
+            kwarg_definition=KwargDefinition(
+                title="field with help text",
+                description="This is a help text",
+            ),
+        ),
+    )
+
+
+def test_title_from_verbose_name() -> None:
+    dto_type = DjangoModelDTO[ModelWithFields]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs["renamed_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="renamed_field",
+            kwarg_definition=KwargDefinition(
+                title="That's not my name",
+            ),
+        ),
+    )
+
+
+def test_non_editable_field() -> None:
+    dto_type = DjangoModelDTO[ModelWithFields]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs["non_editable_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField("read-only"),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="non_editable_field",
+            kwarg_definition=KwargDefinition(title="non editable field"),
+        ),
+    )
+
+
+def test_relationship_to_one() -> None:
+    dto_type = DjangoModelDTO[Book]
+    field_defs = {f.name: f for f in dto_type.generate_field_definitions(Book)}
+
+    assert field_defs["author"] == DTOFieldDefinition.from_field_definition(
+        model_name="Book",
+        default_factory=None,
+        field_definition=FieldDefinition.from_annotation(
+            Author,
+            name="author",
+            kwarg_definition=KwargDefinition(title="author"),
+        ),
+        dto_field=DTOField(),
+    )
+
+
+def test_many_to_one() -> None:
+    dto_type = DjangoModelDTO[Author]
+    field_defs = {f.name: f for f in dto_type.generate_field_definitions(Author)}
+
+    assert field_defs["books"] == DTOFieldDefinition.from_field_definition(
+        model_name="Author",
+        default_factory=list,
+        dto_field=DTOField("read-only"),
+        field_definition=FieldDefinition.from_annotation(
+            List[Book],
+            name="books",
+            kwarg_definition=KwargDefinition(
+                title="books",
+            ),
+        ),
+    )
+
+
+def test_relationship_to_many() -> None:
+    dto_type = DjangoModelDTO[Book]
+    field_defs = {f.name: f for f in dto_type.generate_field_definitions(Book)}
+
+    assert field_defs["genres"] == DTOFieldDefinition.from_field_definition(
+        model_name="Book",
+        default_factory=list,
+        field_definition=FieldDefinition.from_annotation(
+            List[Genre],
+            name="genres",
+            kwarg_definition=KwargDefinition(title="genres"),
+        ),
+        dto_field=DTOField(),
+    )
+
+
+def test_custom_fields() -> None:
+    class MyDTO(DjangoModelDTO):
+        custom_field_types = {MyStringField: str}
+
+    dto_type = MyDTO[ModelWithFields]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs[
+        "custom_string_field"
+    ] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="custom_string_field",
+            kwarg_definition=KwargDefinition(
+                title="custom string field",
+            ),
+        ),
+    )
