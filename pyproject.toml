@@ -1,0 +1,41 @@
+[project]
+name = "litestar-django"
+version = "0.1.0"
+description = "Django model support for Litestar"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+  { name = "Janek Nouvertné", email = "janek@litestar.dev" },
+]
+maintainers = [
+  { name = "Litestar Developers", email = "hello@litestar.dev" },
+]
+requires-python = ">=3.9"
+dependencies = [
+    "django>=4.2.20",
+    "litestar",
+]
+
+[dependency-groups]
+dev = [
+    "django-enumfields2>=3.0.2",
+    "mypy>=1.15.0",
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+    "pytest-django>=4.11.1",
+    "ruff>=0.11.7",
+    "typing-extensions>=4.13.2",
+]
+
+[tool.uv.sources]
+litestar = { git = "https://github.com/litestar-org/litestar", branch = "main" }
+
+
+[tool.mypy]
+packages = ["litestar_django"]
+strict = true
+python_version = "3.9"
+
+
+[tool.ruff]
+target-version = "py39"
