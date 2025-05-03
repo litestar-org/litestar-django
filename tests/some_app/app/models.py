@@ -72,6 +72,16 @@ class ModelWithFields(models.Model):
 
     field_with_choices = models.CharField(choices={"foo": "FOO", "bar": "BAR"})
 
+    field_with_regex_validator = models.CharField(
+        validators=[validators.RegexValidator(r"\d{3}")]
+    )
+
+
+class ModelInvalidRegexValidator(models.Model):
+    invalid_regex_validator = models.CharField(
+        validators=[validators.RegexValidator(r"\d", inverse_match=True)]
+    )
+
 
 class Author(models.Model):
     name = models.CharField(max_length=100)

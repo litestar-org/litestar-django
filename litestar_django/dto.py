@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import decimal
 import uuid
@@ -61,6 +62,15 @@ def _get_model_attribute(obj: Model, attr: str) -> Any:
     return value
 
 
+@dataclasses.dataclass(frozen=True)
+class DjangoDTOConfig(DTOConfig):
+    ignore_inverse_match_regex_validators: bool = False
+    """
+    When setting 'inverse_match=True' on a RegexValidator, ignore the validator instead
+    of raising en exception
+    """
+
+
 class DjangoModelDTO(AbstractDTO[T], Generic[T]):
     attribute_accessor = _get_model_attribute
     custom_field_types: dict[type[AnyField], Any] | None = None
@@ -100,6 +110,23 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
                     constraints["lt"] = validator.limit_value
                 elif isinstance(validator, validators.MaxLengthValidator):
                     constraints["max_length"] = validator.limit_value
+                elif isinstance(validator, validators.RegexValidator):
+                    if validator.inverse_match:
+                        if (
+                            isinstance(cls.config, DjangoDTOConfig)
+                            and cls.config.ignore_inverse_match_regex_validators
+                        ):
+                            continue
+                        else:
+                            raise ValueError(
+                                f"RegexValidator(regex='{validator.regex}') with "
+                                "'inverse_match=True' cannot be presented as a pattern in "
+                                "OpenAPI. Instead of using 'inverse_match=True', the "
+                                "pattern should be constructed in a way that only a valid "
+                                "string matches."
+                            )
+                    constraints["pattern"] = validator.regex.pattern
+
                 else:
                     # handle generic validators
                     constraints.update(cls.create_constraints_for_validator(validator))

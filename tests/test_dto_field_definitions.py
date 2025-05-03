@@ -1,13 +1,14 @@
 import datetime
 import decimal
 import uuid
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Annotated
 
+import pytest
 from litestar.dto import DTOFieldDefinition, DTOField
 from litestar.params import KwargDefinition
 from litestar.typing import FieldDefinition
 
-from litestar_django.dto import DjangoModelDTO
+from litestar_django.dto import DjangoModelDTO, DjangoDTOConfig
 from tests.some_app.app.models import (
     Author,
     ModelWithFields,
@@ -17,6 +18,7 @@ from tests.some_app.app.models import (
     MyStringField,
     StdEnum,
     LabelledEnum,
+    ModelInvalidRegexValidator,
 )
 
 
@@ -252,7 +254,9 @@ def test_basic_field_types() -> None:
         ),
     )
 
-    assert field_defs["labelled_enum_field"] == DTOFieldDefinition.from_field_definition(
+    assert field_defs[
+        "labelled_enum_field"
+    ] == DTOFieldDefinition.from_field_definition(
         model_name="ModelWithFields",
         default_factory=None,
         dto_field=DTOField(),
@@ -264,7 +268,6 @@ def test_basic_field_types() -> None:
             ),
         ),
     )
-
 
     assert field_defs["field_with_choices"] == DTOFieldDefinition.from_field_definition(
         model_name="ModelWithFields",
@@ -279,6 +282,40 @@ def test_basic_field_types() -> None:
             ),
         ),
     )
+
+    assert field_defs[
+        "field_with_regex_validator"
+    ] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="field_with_regex_validator",
+            kwarg_definition=KwargDefinition(
+                title="field with regex validator",
+                pattern=r"\d{3}",
+            ),
+        ),
+    )
+
+
+def test_invalid_regex_validator() -> None:
+    dto_type = DjangoModelDTO[ModelInvalidRegexValidator]
+    with pytest.raises(ValueError, match="inverse_match=True"):
+        tuple(dto_type.generate_field_definitions(ModelInvalidRegexValidator))
+
+    dto_type = DjangoModelDTO[
+        Annotated[
+            ModelInvalidRegexValidator,
+            DjangoDTOConfig(ignore_inverse_match_regex_validators=True),
+        ]
+    ]
+    definitions = {
+        f.name: f
+        for f in dto_type.generate_field_definitions(ModelInvalidRegexValidator)
+    }
+    assert not definitions["invalid_regex_validator"].kwarg_definition.pattern
 
 
 def test_constraints() -> None:
@@ -346,7 +383,6 @@ def test_constraints() -> None:
             ),
         ),
     )
-
 
 
 def test_nullable_field() -> None:
