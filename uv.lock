@@ -98,6 +98,19 @@ wheels = [
 ]
 
 [[package]]
+name = "django-enumfields2"
+version = "3.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django", version = "4.2.20", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "django", version = "5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/03/e4/96daf09b637433a08dc720650d22bbb5a669d069a1afefd08bcc03eb71f3/django_enumfields2-3.0.2.tar.gz", hash = "sha256:787dd61d132f73ffadbcfd74dc5caa339505f506b1ebb60da9bf0344eacf2115", size = 6689 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/dd/d83e5aa2feed816cba8099bb4893c32962fc55cc8da2ea63052768e7a8ef/django_enumfields2-3.0.2-py3-none-any.whl", hash = "sha256:7ddcbdea6b97428f481f7191b53b110933be355f6d10656d59a4f886488a6cc4", size = 9003 },
+]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -218,6 +231,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "django-enumfields2" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-django" },
@@ -232,6 +246,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "django-enumfields2", specifier = ">=3.0.2" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-django", specifier = ">=4.11.1" },

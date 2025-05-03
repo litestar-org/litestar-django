@@ -1,13 +1,14 @@
+import secrets
 from typing import Annotated
 
 import pytest
-from litestar import get, Response
+from litestar import get, Response, Litestar, post
 from litestar.dto import DTOConfig
 from litestar.testing import create_test_client
 
 from litestar_django.dto import DjangoModelDTO
-from tests.some_app.app.models import Author, Book, Genre
 from litestar_django.plugin import DjangoModelPlugin
+from tests.some_app.app.models import Author, Book, Genre, ModelWithFields
 
 
 @pytest.mark.django_db(transaction=True)
@@ -133,3 +134,33 @@ def test_serialize_to_many() -> None:
                 "genres": [],
             },
         ]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_validate() -> None:
+    @post(
+        "/",
+        sync_to_thread=True,
+        dto=DjangoModelDTO[Annotated[Author, DTOConfig(exclude={"id", "books"})]],
+        return_dto=DjangoModelDTO[Author],
+    )
+    def handler(data: Author) -> Author:
+        data.save()
+        return Author.objects.prefetch_related("books").get(id=data.id)
+
+    with create_test_client([handler]) as client:
+        author_name = secrets.token_hex()
+        res = client.post("/", json={"name": author_name})
+        assert res.status_code == 201
+        author = Author.objects.get(name=author_name)
+        assert res.json() == {"id": author.id, "name": author_name, "books": []}
+
+
+def test_schema() -> None:
+    @get("/", dto=DjangoModelDTO[ModelWithFields], sync_to_thread=True)
+    def handler() -> ModelWithFields:
+        pass
+
+    app = Litestar([handler])
+    # ensure schema is valid
+    app.openapi_schema

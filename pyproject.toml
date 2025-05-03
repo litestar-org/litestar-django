@@ -18,6 +18,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "django-enumfields2>=3.0.2",
     "mypy>=1.15.0",
     "pytest>=8.3.5",
     "pytest-django>=4.11.1",

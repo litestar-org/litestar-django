@@ -15,6 +15,8 @@ from tests.some_app.app.models import (
     Book,
     Genre,
     MyStringField,
+    StdEnum,
+    LabelledEnum,
 )
 
 
@@ -237,6 +239,47 @@ def test_basic_field_types() -> None:
         ),
     )
 
+    assert field_defs["enum_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            StdEnum,
+            name="enum_field",
+            kwarg_definition=KwargDefinition(
+                title="enum field",
+            ),
+        ),
+    )
+
+    assert field_defs["labelled_enum_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            LabelledEnum,
+            name="labelled_enum_field",
+            kwarg_definition=KwargDefinition(
+                title="labelled enum field",
+            ),
+        ),
+    )
+
+
+    assert field_defs["field_with_choices"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="field_with_choices",
+            kwarg_definition=KwargDefinition(
+                title="field with choices",
+                enum=["foo", "bar"],
+            ),
+        ),
+    )
+
 
 def test_constraints() -> None:
     dto_type = DjangoModelDTO[ModelWithFields]
@@ -285,7 +328,7 @@ def test_constraints() -> None:
             name="min_1_str_field",
             kwarg_definition=KwargDefinition(
                 title="min 1 str field",
-                gt=1,
+                min_length=1,
             ),
         ),
     )
@@ -299,10 +342,11 @@ def test_constraints() -> None:
             name="max_2_str_field",
             kwarg_definition=KwargDefinition(
                 title="max 2 str field",
-                lt=2,
+                max_length=2,
             ),
         ),
     )
+
 
 
 def test_nullable_field() -> None:

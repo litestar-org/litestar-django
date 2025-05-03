@@ -16,7 +16,6 @@ from django.db.models import (  # type: ignore[import-untyped]
     ForeignObjectRel,
 )
 from django.db.models.fields import NOT_PROVIDED  # type: ignore[import-untyped]
-from litestar.connection import ASGIConnection
 from litestar.dto import DTOField
 from litestar.dto.base_dto import AbstractDTO
 from litestar.dto.config import DTOConfig
@@ -49,6 +48,11 @@ _FIELD_TYPE_MAP: dict[type[Field], Any] = {
     models.BinaryField: bytes,
 }
 
+try:
+    from enumfields import EnumField
+except ImportError:
+    EnumField = None
+
 
 def _get_model_attribute(obj: Model, attr: str) -> Any:
     value = getattr(obj, attr)
@@ -62,16 +66,14 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
     custom_field_types: dict[type[AnyField], Any] | None = None
 
     @classmethod
-    def get_config_for_model_type(
-        cls, config: DTOConfig, model_type: Type[T]
-    ) -> DTOConfig:
-        return config
-
-    @classmethod
     def get_field_type(cls, field: Field, type_map: dict[type[AnyField], Any]) -> Any:
+        if EnumField is not None and isinstance(field, EnumField):
+            return field.enum
+
         for field_cls, type_ in type_map.items():
             if isinstance(field, field_cls):
                 return type_
+
         return Any
 
     @classmethod
@@ -83,22 +85,39 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
             if field.help_text:
                 constraints["description"] = field.help_text
 
+            # add choices as enum. if field is an enum type, we hand this off to
+            # Litestar for native enum support
+            if field.choices and not (EnumField and isinstance(field, EnumField)):
+                constraints["enum"] = [c[0] for c in field.choices]
+
             for validator in field.validators:
-                if isinstance(
-                    validator,
-                    (validators.MinLengthValidator, validators.MinValueValidator),
-                ):
+                # fast path for known supported validators
+                if isinstance(validator, validators.MinValueValidator):
                     constraints["gt"] = validator.limit_value
-                elif isinstance(
-                    validator,
-                    (validators.MaxLengthValidator, validators.MaxValueValidator),
-                ):
+                elif isinstance(validator, validators.MinLengthValidator):
+                    constraints["min_length"] = validator.limit_value
+                elif isinstance(validator, validators.MaxValueValidator):
                     constraints["lt"] = validator.limit_value
+                elif isinstance(validator, validators.MaxLengthValidator):
+                    constraints["max_length"] = validator.limit_value
+                else:
+                    # handle generic validators
+                    constraints.update(cls.create_constraints_for_validator(validator))
 
         else:
             constraints["title"] = field.name
 
         return KwargDefinition(**constraints)
+
+    @classmethod
+    def create_constraints_for_validator(
+        cls, validator: Callable[[Any], None]
+    ) -> dict[str, Any]:
+        """
+        Create constraints for field validators. Must return a dictionary that can be
+        passed to 'KwargDefinition'
+        """
+        return {}
 
     @classmethod
     def get_field_default(

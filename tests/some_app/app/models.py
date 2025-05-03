@@ -1,6 +1,22 @@
-from django.contrib.auth.models import User
+import enum
+
+import enumfields
 from django.core import validators
 from django.db import models
+
+
+class StdEnum(enum.StrEnum):
+    ONE = "ONE"
+    TWO = "TWO"
+
+
+class LabelledEnum(enumfields.Enum):
+    ONE = "ONE"
+    TWO = "TWO"
+
+    class Labels:
+        ONE = "One"
+        TWO = "Two"
 
 
 def make_default() -> str:
@@ -50,6 +66,11 @@ class ModelWithFields(models.Model):
     max_2_str_field = models.CharField(validators=[validators.MaxLengthValidator(2)])
 
     custom_string_field = MyStringField()
+
+    enum_field = enumfields.EnumField(StdEnum)
+    labelled_enum_field = enumfields.EnumField(LabelledEnum)
+
+    field_with_choices = models.CharField(choices={"foo": "FOO", "bar": "BAR"})
 
 
 class Author(models.Model):
