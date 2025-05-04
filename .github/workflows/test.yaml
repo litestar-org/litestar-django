@@ -49,6 +49,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    name: Test (Py ${{ matrix.python-version }}, Dj ${{ matrix.django-version }})
     strategy:
       fail-fast: true
       matrix:
