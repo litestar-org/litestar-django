@@ -19,7 +19,7 @@ class Book(models.Model):
     name = models.CharField()
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="books")
     genres = models.ManyToManyField(Genre, related_name="books")
-    
+
 
 @get("/{author_id:int}")
 async def handler(author_id: int) -> Author:
@@ -80,11 +80,11 @@ from app.models import Author
     sync_to_thread=True,
     dto=DjangoModelDTO[
        Annotated[
-          Author, 
+          Author,
           # exclude primary key and relationship fields
           DTOConfig(exclude={"id", "books"})
-       ] 
-    ], 
+       ]
+    ],
     return_dto=DjangoModelDTO[Author],
 )
 async def handler(data: Author) -> Author:
@@ -138,18 +138,18 @@ Relationships will be represented as individual components, referenced in the sc
 
 ## Lazy loading
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > Since lazy-loading is not supported in an async context, you must ensure to always
-> load everything consumed by the DTO. Not doing so will result in a 
+> load everything consumed by the DTO. Not doing so will result in a
 > [`SynchronousOnlyOperation`](https://docs.djangoproject.com/en/5.2/ref/exceptions/#django.core.exceptions.SynchronousOnlyOperation)
 > exception being raised by Django
 
 This can be mitigated by:
 
 1. Setting `include` or `exclude` rules to only include necessary fields ([docs](https://docs.litestar.dev/latest/usage/dto/1-abstract-dto.html#excluding-fields))
-2. Configuring nested relationships with an appropriate `max_nexted_depth` 
+2. Configuring nested relationships with an appropriate `max_nexted_depth`
    ([docs](https://docs.litestar.dev/latest/usage/dto/1-abstract-dto.html#nested-fields))
-3. Using [`select_related`](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-related) 
+3. Using [`select_related`](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-related)
    and [`prefetch_related`](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#prefetch-related)
    to ensure relationships are fully loaded
 
@@ -157,10 +157,10 @@ This can be mitigated by:
 
 ## Contributing
 
-All [Litestar Organization][litestar-org] projects are open for contributions of any 
+All [Litestar Organization][litestar-org] projects are open for contributions of any
 size and form.
 
-If you have any questions, reach out to us on [Discord][discord] or our org-wide 
+If you have any questions, reach out to us on [Discord][discord] or our org-wide
 [GitHub discussions][litestar-discussions] page.
 
 <!-- markdownlint-disable -->
@@ -175,5 +175,3 @@ If you have any questions, reach out to us on [Discord][discord] or our org-wide
 [litestar-org]: https://github.com/litestar-org
 [discord]: https://discord.gg/litestar
 [litestar-discussions]: https://github.com/orgs/litestar-org/discussions
-
-
