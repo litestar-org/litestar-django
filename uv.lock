@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.9"
 resolution-markers = [
     "python_full_version == '3.10.*'",
@@ -56,7 +57,7 @@ name = "click"
 version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593 }
 wheels = [
@@ -237,8 +238,8 @@ wheels = [
 
 [[package]]
 name = "litestar"
-version = "2.15.2"
-source = { git = "https://github.com/litestar-org/litestar?branch=main#7f8d1d44e62780dab94479d58dc6fb7bc678023d" }
+version = "2.16.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "click" },
@@ -254,6 +255,10 @@ dependencies = [
     { name = "rich" },
     { name = "rich-click" },
     { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0d/4e/3376d5737a4c2e26fb2991a046265c38335b134d3e04e93c6d754e962e4e/litestar-2.16.0.tar.gz", hash = "sha256:f65c0d543bfec12b7433dff624322936f30bbdfb54ad3c5b7ef22ab2d092be2d", size = 399637 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9a/dc/4d1018577683918cd24a58228c90833f71f792aafcfffb44905c9062f737/litestar-2.16.0-py3-none-any.whl", hash = "sha256:8a48557198556f01d3d70da3859a471aa56595a4a344362d9529ed65804e3ee4", size = 573158 },
 ]
 
 [[package]]
@@ -280,7 +285,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=4.2.20" },
-    { name = "litestar", git = "https://github.com/litestar-org/litestar?branch=main" },
+    { name = "litestar", specifier = ">=2.16.0" },
 ]
 
 [package.metadata.requires-dev]

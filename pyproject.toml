@@ -13,7 +13,7 @@ maintainers = [
 requires-python = ">=3.9"
 dependencies = [
     "django>=4.2.20",
-    "litestar",
+    "litestar>=2.16.0",
 ]
 
 [dependency-groups]
@@ -26,9 +26,6 @@ dev = [
     "ruff>=0.11.7",
     "typing-extensions>=4.13.2",
 ]
-
-[tool.uv.sources]
-litestar = { git = "https://github.com/litestar-org/litestar", branch = "main" }
 
 
 [tool.mypy]
