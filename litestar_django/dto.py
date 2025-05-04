@@ -50,7 +50,7 @@ _FIELD_TYPE_MAP: dict[type[Field], Any] = {
 }
 
 try:
-    from enumfields import EnumField
+    from enumfields import EnumField  # type: ignore[import-untyped]
 except ImportError:
     EnumField = None
 
