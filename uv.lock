@@ -274,6 +274,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-django" },
     { name = "ruff" },
+    { name = "typing-extensions" },
 ]
 
 [package.metadata]
@@ -290,6 +291,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-django", specifier = ">=4.11.1" },
     { name = "ruff", specifier = ">=0.11.7" },
+    { name = "typing-extensions", specifier = ">=4.13.2" },
 ]
 
 [[package]]

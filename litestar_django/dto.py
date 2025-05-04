@@ -2,7 +2,17 @@ import dataclasses
 import datetime
 import decimal
 import uuid
-from typing import TypeVar, Generic, Type, Any, Generator, List, Optional, Callable
+from typing import (
+    TypeVar,
+    Generic,
+    Type,
+    Any,
+    Generator,
+    List,
+    Optional,
+    Callable,
+    Mapping,
+)
 
 from django.core import validators  # type: ignore[import-untyped]
 from django.db import models  # type: ignore[import-untyped]
@@ -73,7 +83,7 @@ class DjangoDTOConfig(DTOConfig):
 
 class DjangoModelDTO(AbstractDTO[T], Generic[T]):
     attribute_accessor = _get_model_attribute
-    custom_field_types: dict[type[AnyField], Any] | None = None
+    custom_field_types: Optional[dict[type[AnyField], Any]] = None
 
     @classmethod
     def get_field_type(cls, field: Field, type_map: dict[type[AnyField], Any]) -> Any:
@@ -98,19 +108,26 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
             # add choices as enum. if field is an enum type, we hand this off to
             # Litestar for native enum support
             if field.choices and not (EnumField and isinstance(field, EnumField)):
-                constraints["enum"] = [c[0] for c in field.choices]
+                choices = field.choices
+                if isinstance(choices, Mapping):
+                    constraints["enum"] = list(choices.keys())
+                else:
+                    constraints["enum"] = [c[0] for c in choices]
 
             for validator in field.validators:
                 # fast path for known supported validators
-                if isinstance(validator, validators.MinValueValidator):
-                    constraints["gt"] = validator.limit_value
-                elif isinstance(validator, validators.MinLengthValidator):
-                    constraints["min_length"] = validator.limit_value
-                elif isinstance(validator, validators.MaxValueValidator):
-                    constraints["lt"] = validator.limit_value
-                elif isinstance(validator, validators.MaxLengthValidator):
-                    constraints["max_length"] = validator.limit_value
-                elif isinstance(validator, validators.RegexValidator):
+                # nullable fields do not support these constraints and for enum the
+                # constraint is defined implicitly by its values
+                if not field.null and "enum" not in constraints:
+                    if isinstance(validator, validators.MinValueValidator):
+                        constraints["gt"] = validator.limit_value
+                    elif isinstance(validator, validators.MinLengthValidator):
+                        constraints["min_length"] = validator.limit_value
+                    elif isinstance(validator, validators.MaxValueValidator):
+                        constraints["lt"] = validator.limit_value
+                    elif isinstance(validator, validators.MaxLengthValidator):
+                        constraints["max_length"] = validator.limit_value
+                if isinstance(validator, validators.RegexValidator):
                     if validator.inverse_match:
                         if (
                             isinstance(cls.config, DjangoDTOConfig)
@@ -151,7 +168,7 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
     @classmethod
     def get_field_default(
         cls, field: AnyField
-    ) -> tuple[Any, Callable[..., Any] | None]:
+    ) -> tuple[Any, Optional[Callable[..., Any]]]:
         if isinstance(field, ForeignObjectRel):
             if isinstance(field, ManyToOneRel):
                 return Empty, list

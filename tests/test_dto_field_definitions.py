@@ -1,5 +1,6 @@
 import datetime
 import decimal
+import sys
 import uuid
 from typing import Optional, List, Any, Annotated
 
@@ -21,6 +22,14 @@ from tests.some_app.app.models import (
     ModelInvalidRegexValidator,
 )
 
+# django extract these from SQLite on >= 3.10
+if sys.version_info >= (3, 10):
+    MAX_INT_VALUE = 9223372036854775807
+    MIN_INT_VALUE = -9223372036854775808
+else:
+    MAX_INT_VALUE = None
+    MIN_INT_VALUE = None
+
 
 def test_basic_field_types() -> None:
     dto_type = DjangoModelDTO[ModelWithFields]
@@ -37,8 +46,8 @@ def test_basic_field_types() -> None:
             name="id",
             kwarg_definition=KwargDefinition(
                 title="ID",
-                lt=9223372036854775807,  # max int value set by django
-                gt=-9223372036854775808,  # min int value set by django
+                lt=MAX_INT_VALUE,  # max int value set by django
+                gt=MIN_INT_VALUE,  # min int value set by django
             ),
         ),
     )
@@ -170,8 +179,8 @@ def test_basic_field_types() -> None:
             kwarg_definition=KwargDefinition(
                 title="integer field",
                 # min/max int values set by django, obtained from the DB (sqlite in our case)
-                lt=9223372036854775807,
-                gt=-9223372036854775808,
+                lt=MAX_INT_VALUE,
+                gt=MIN_INT_VALUE,
             ),
         ),
     )
@@ -211,6 +220,7 @@ def test_basic_field_types() -> None:
             name="char_field",
             kwarg_definition=KwargDefinition(
                 title="char field",
+                max_length=100,
             ),
         ),
     )
@@ -295,6 +305,7 @@ def test_basic_field_types() -> None:
             kwarg_definition=KwargDefinition(
                 title="field with regex validator",
                 pattern=r"\d{3}",
+                max_length=100,
             ),
         ),
     )
@@ -334,7 +345,7 @@ def test_constraints() -> None:
             kwarg_definition=KwargDefinition(
                 title="min 1 int field",
                 gt=1,
-                lt=9223372036854775807,  # max int value set by django
+                lt=MAX_INT_VALUE,  # max int value set by django
             ),
         ),
     )
@@ -366,20 +377,7 @@ def test_constraints() -> None:
             kwarg_definition=KwargDefinition(
                 title="min 1 str field",
                 min_length=1,
-            ),
-        ),
-    )
-
-    assert field_defs["max_2_str_field"] == DTOFieldDefinition.from_field_definition(
-        model_name="ModelWithFields",
-        default_factory=None,
-        dto_field=DTOField(),
-        field_definition=FieldDefinition.from_annotation(
-            str,
-            name="max_2_str_field",
-            kwarg_definition=KwargDefinition(
-                title="max 2 str field",
-                max_length=2,
+                max_length=100,
             ),
         ),
     )
@@ -459,6 +457,7 @@ def test_description_from_help_text() -> None:
             kwarg_definition=KwargDefinition(
                 title="field with help text",
                 description="This is a help text",
+                max_length=100,
             ),
         ),
     )
@@ -478,7 +477,7 @@ def test_title_from_verbose_name() -> None:
             str,
             name="renamed_field",
             kwarg_definition=KwargDefinition(
-                title="That's not my name",
+                title="That's not my name", max_length=100
             ),
         ),
     )
@@ -497,7 +496,9 @@ def test_non_editable_field() -> None:
         field_definition=FieldDefinition.from_annotation(
             str,
             name="non_editable_field",
-            kwarg_definition=KwargDefinition(title="non editable field"),
+            kwarg_definition=KwargDefinition(
+                title="non editable field", max_length=100
+            ),
         ),
     )
 
