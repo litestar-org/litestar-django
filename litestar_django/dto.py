@@ -120,10 +120,12 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
                         else:
                             raise ValueError(
                                 f"RegexValidator(regex='{validator.regex}') with "
-                                "'inverse_match=True' cannot be presented as a pattern in "
-                                "OpenAPI. Instead of using 'inverse_match=True', the "
-                                "pattern should be constructed in a way that only a valid "
-                                "string matches."
+                                "'inverse_match=True' cannot be presented as a pattern "
+                                "in OpenAPI. Construct the pattern in a way that only a"
+                                "valid string matches, or set "
+                                "DjangoDTOConfig(ignore_inverse_match_regex_validators=True), "
+                                "to skip setting the 'pattern' property in the OpenAPI "
+                                "schema"
                             )
                     constraints["pattern"] = validator.regex.pattern
 
