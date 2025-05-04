@@ -74,8 +74,8 @@ jobs:
           enable-cache: true
 
       - name: Test
-        run: > 
-          uv run 
+        run: >
+          uv run
           --python=${{ matrix.python-version }}
-          --with="django~=${{ matrix.django-version }}" 
+          --with="django~=${{ matrix.django-version }}"
           python -m pytest
