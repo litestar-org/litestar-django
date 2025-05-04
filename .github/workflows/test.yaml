@@ -69,8 +69,9 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install dependencies
-        run: uv sync
-
       - name: Test
-        run: uv run --with="django~=${{ matrix.django-version }}" python -m pytest
+        run: > 
+          uv run 
+          --python=${{ matrix.python-version }}
+          --with="django~=${{ matrix.django-version }}" 
+          python -m pytest
