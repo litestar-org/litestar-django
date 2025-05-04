@@ -1,6 +1,5 @@
 import datetime
 import decimal
-import sys
 import uuid
 from typing import Optional, List, Any, Annotated
 
@@ -8,6 +7,8 @@ import pytest
 from litestar.dto import DTOFieldDefinition, DTOField
 from litestar.params import KwargDefinition
 from litestar.typing import FieldDefinition
+import django
+
 
 from litestar_django.dto import DjangoModelDTO, DjangoDTOConfig
 from tests.some_app.app.models import (
@@ -22,8 +23,8 @@ from tests.some_app.app.models import (
     ModelInvalidRegexValidator,
 )
 
-# django extract these from SQLite on >= 3.10
-if sys.version_info >= (3, 10):
+# django extract these from SQLite on 5.1 and above
+if django.get_version().startswith("5"):
     MAX_INT_VALUE = 9223372036854775807
     MIN_INT_VALUE = -9223372036854775808
 else:
