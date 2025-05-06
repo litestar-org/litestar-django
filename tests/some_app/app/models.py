@@ -4,6 +4,7 @@ import sys
 import enumfields
 from django.core import validators
 from django.db import models
+from django.utils.translation import gettext
 
 
 class StdEnum(str, enum.Enum):
@@ -115,6 +116,11 @@ class ModelWithFields(models.Model):
     field_with_regex_validator = models.CharField(
         validators=[validators.RegexValidator(r"\d{3}")],
         max_length=100,
+    )
+
+    field_with_non_string_verbose_name = models.CharField(
+        max_length=100,
+        verbose_name=gettext("Some field"),
     )
 
 

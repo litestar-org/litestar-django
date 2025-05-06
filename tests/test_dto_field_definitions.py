@@ -311,6 +311,22 @@ def test_basic_field_types() -> None:
         ),
     )
 
+    assert field_defs[
+        "field_with_non_string_verbose_name"
+    ] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            str,
+            name="field_with_non_string_verbose_name",
+            kwarg_definition=KwargDefinition(
+                title="Some field",
+                max_length=100,
+            ),
+        ),
+    )
+
 
 def test_invalid_regex_validator() -> None:
     dto_type = DjangoModelDTO[ModelInvalidRegexValidator]
