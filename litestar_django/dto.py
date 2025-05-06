@@ -100,7 +100,9 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
     def get_field_constraints(cls, field: AnyField) -> KwargDefinition:
         constraints = {}
         if isinstance(field, Field):
-            constraints["title"] = field.verbose_name
+            constraints["title"] = (
+                str(field.verbose_name) if field.verbose_name else field.name
+            )  # might be a proxy
 
             if field.help_text:
                 constraints["description"] = field.help_text
@@ -153,7 +155,7 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
         else:
             constraints["title"] = field.name
 
-        return KwargDefinition(**constraints)
+        return KwargDefinition(**constraints)  # type: ignore[arg-type]
 
     @classmethod
     def create_constraints_for_validator(
