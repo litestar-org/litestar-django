@@ -1,5 +1,5 @@
 import secrets
-from typing import Annotated
+from typing import Annotated, Any
 
 import pytest
 from litestar import get, Response, Litestar, post
@@ -8,7 +8,13 @@ from litestar.testing import create_test_client
 
 from litestar_django.dto import DjangoModelDTO
 from litestar_django.plugin import DjangoModelPlugin
-from tests.some_app.app.models import Author, Book, Genre, ModelWithFields
+from tests.some_app.app.models import (
+    Author,
+    Book,
+    Genre,
+    ModelWithFields,
+    ModelWithCustomFields,
+)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -154,6 +160,38 @@ def test_validate() -> None:
         assert res.status_code == 201
         author = Author.objects.get(name=author_name)
         assert res.json() == {"id": author.id, "name": author_name, "books": []}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_enumfields() -> None:
+    @post(
+        "/",
+        dto=DjangoModelDTO[Annotated[ModelWithCustomFields, DTOConfig(exclude={"id"})]],
+    )
+    async def post_handler(data: ModelWithCustomFields) -> dict[str, Any]:
+        await data.asave()
+        return {
+            "id": data.id,
+            "enum_field": data.enum_field.value,
+            "enumfields_enum": data.enumfields_enum.value,
+        }
+
+    @get("/{obj_id:int}", dto=DjangoModelDTO[ModelWithCustomFields])
+    async def get_handler(obj_id: int) -> ModelWithCustomFields:
+        return await ModelWithCustomFields.objects.aget(id=obj_id)
+
+    with create_test_client(
+        [get_handler, post_handler], plugins=[DjangoModelPlugin()]
+    ) as client:
+        res = client.post("/", json={"enum_field": "ONE", "enumfields_enum": "TWO"})
+        assert res.status_code == 201
+        data = res.json()
+        model_id = data.pop("id")
+        assert data == {"enum_field": "ONE", "enumfields_enum": "TWO"}
+
+        res = client.get(f"/{model_id}")
+        assert res.status_code == 200
+        assert res.json() == {"id": model_id, **data}
 
 
 def test_schema() -> None:
