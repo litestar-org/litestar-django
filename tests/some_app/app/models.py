@@ -131,6 +131,11 @@ class ModelInvalidRegexValidator(models.Model):
     )
 
 
+class ModelWithCustomFields(models.Model):
+    enum_field = enumfields.EnumField(StdEnum)
+    enumfields_enum = enumfields.EnumField(LabelledEnum)
+
+
 class Author(models.Model):
     name = models.CharField(max_length=100)
 

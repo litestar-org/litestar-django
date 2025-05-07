@@ -154,6 +154,14 @@ This can be mitigated by:
    to ensure relationships are fully loaded
 
 
+## Serialization / validation of 3rd party field types
+
+Additionally, the following 3rd party fields / types are supported if the
+`DjangoModelPlugin` is installed:
+
+- `django-enumfields`
+- `django-enumfields2`
+
 
 ## Contributing
 
