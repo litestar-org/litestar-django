@@ -193,7 +193,9 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
         return default, default_factory
 
     @classmethod
-    def get_model_fields(cls, model_type: type[T]) -> Generator[tuple[str, AnyField]]:
+    def get_model_fields(
+        cls, model_type: type[T]
+    ) -> Generator[tuple[str, AnyField], None, None]:
         for field in model_type._meta.get_fields():
             yield field.name, field
             if isinstance(field, ForeignKey):
