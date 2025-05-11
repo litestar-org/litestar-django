@@ -144,7 +144,17 @@ class Genre(models.Model):
     name = models.CharField(max_length=50)
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=100)
+
+
 class Book(models.Model):
     name = models.CharField(max_length=100)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="books")
+    nullable_tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name="books",
+    )
     genres = models.ManyToManyField(Genre, related_name="books")

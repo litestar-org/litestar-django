@@ -153,6 +153,27 @@ This can be mitigated by:
    and [`prefetch_related`](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#prefetch-related)
    to ensure relationships are fully loaded
 
+## Foreign keys
+
+When defining a `ForeignKey` field, Django will implicitly generate another field on the
+model with an `_id` suffix, to store the actual foreign key value. The DTO will include
+these implicit fields.
+
+```python
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+
+class Book(models.Model):
+    name = models.CharField(max_length=100)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="books")
+```
+
+In this example, the DTO for `Book` includes the field definitions
+- `id: int`
+- `name: str`
+- `author_id: int`
+- `author: Author`
+
 
 ## Serialization / validation of 3rd party field types
 
