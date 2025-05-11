@@ -21,6 +21,7 @@ from tests.some_app.app.models import (
     StdEnum,
     LabelledEnum,
     ModelInvalidRegexValidator,
+    Tag,
 )
 
 # django extract these from SQLite on 5.1 and above
@@ -532,6 +533,56 @@ def test_relationship_to_one() -> None:
             name="author",
             kwarg_definition=KwargDefinition(title="author"),
         ),
+        dto_field=DTOField("read-only"),
+    )
+
+    assert field_defs["author_id"] == DTOFieldDefinition.from_field_definition(
+        model_name="Book",
+        default_factory=None,
+        field_definition=FieldDefinition.from_annotation(
+            int,
+            name="author_id",
+            kwarg_definition=KwargDefinition(
+                title="author_id",
+                # min/max int values set by django
+                lt=MAX_INT_VALUE,
+                gt=MIN_INT_VALUE,
+            ),
+        ),
+        dto_field=DTOField(),
+    )
+
+
+def test_relationship_to_one_nullable() -> None:
+    dto_type = DjangoModelDTO[Book]
+    field_defs = {f.name: f for f in dto_type.generate_field_definitions(Book)}
+
+    assert field_defs["nullable_tag"] == DTOFieldDefinition.from_field_definition(
+        model_name="Book",
+        default_factory=None,
+        field_definition=FieldDefinition.from_annotation(
+            Optional[Tag],
+            name="nullable_tag",
+            default=None,
+            kwarg_definition=KwargDefinition(title="nullable tag"),
+        ),
+        dto_field=DTOField("read-only"),
+    )
+
+    assert field_defs["nullable_tag_id"] == DTOFieldDefinition.from_field_definition(
+        model_name="Book",
+        default_factory=None,
+        field_definition=FieldDefinition.from_annotation(
+            Optional[int],
+            name="nullable_tag_id",
+            default=None,
+            kwarg_definition=KwargDefinition(
+                title="nullable_tag_id",
+                # no limit values if the field is nullable
+                lt=None,
+                gt=None,
+            ),
+        ),
         dto_field=DTOField(),
     )
 
@@ -566,7 +617,7 @@ def test_relationship_to_many() -> None:
             name="genres",
             kwarg_definition=KwargDefinition(title="genres"),
         ),
-        dto_field=DTOField(),
+        dto_field=DTOField("read-only"),
     )
 
 

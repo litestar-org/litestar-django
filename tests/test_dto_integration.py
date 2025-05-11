@@ -110,7 +110,8 @@ def test_serialize_to_many() -> None:
     def handler() -> list[Book]:
         # need to prefetch here, so we don't accidentally perform lazy-loading during
         # the transfer process
-        return list(Book.objects.prefetch_related("author", "genres").all())
+        data = list(Book.objects.prefetch_related("author", "genres").all())
+        return data
 
     with create_test_client(
         [handler], raise_server_exceptions=True, debug=True
@@ -121,13 +122,19 @@ def test_serialize_to_many() -> None:
             {
                 "id": book_a.id,
                 "name": "book_a",
+                "author_id": author.id,
                 "author": {"id": author.id, "name": "Someone"},
+                "nullable_tag_id": None,
+                "nullable_tag": None,
                 "genres": [{"id": genre_a.id, "name": "genre_a"}],
             },
             {
                 "id": book_b.id,
                 "name": "book_b",
+                "author_id": author.id,
                 "author": {"id": author.id, "name": "Someone"},
+                "nullable_tag_id": None,
+                "nullable_tag": None,
                 "genres": [
                     {"id": genre_a.id, "name": "genre_a"},
                     {"id": genre_b.id, "name": "genre_b"},
@@ -136,7 +143,10 @@ def test_serialize_to_many() -> None:
             {
                 "id": book_c.id,
                 "name": "book_c",
+                "author_id": author.id,
                 "author": {"id": author.id, "name": "Someone"},
+                "nullable_tag_id": None,
+                "nullable_tag": None,
                 "genres": [],
             },
         ]
@@ -147,8 +157,10 @@ def test_validate() -> None:
     @post(
         "/",
         sync_to_thread=True,
-        dto=DjangoModelDTO[Annotated[Author, DTOConfig(exclude={"id", "books"})]],
-        return_dto=DjangoModelDTO[Author],
+        dto=DjangoModelDTO[Annotated[Author, DTOConfig(include={"name"})]],
+        return_dto=DjangoModelDTO[
+            Annotated[Author, DTOConfig(include={"id", "name", "books"})]
+        ],
     )
     def handler(data: Author) -> Author:
         data.save()
