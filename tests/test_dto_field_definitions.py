@@ -401,6 +401,26 @@ def test_constraints() -> None:
     )
 
 
+def test_no_len_constraints_on_partial() -> None:
+    dto_type = DjangoModelDTO[Annotated[ModelWithFields, DjangoDTOConfig(partial=True)]]
+    field_defs = {
+        f.name: f for f in dto_type.generate_field_definitions(ModelWithFields)
+    }
+
+    assert field_defs["min_1_int_field"] == DTOFieldDefinition.from_field_definition(
+        model_name="ModelWithFields",
+        default_factory=None,
+        dto_field=DTOField(),
+        field_definition=FieldDefinition.from_annotation(
+            int,
+            name="min_1_int_field",
+            kwarg_definition=KwargDefinition(
+                title="min 1 int field",
+            ),
+        ),
+    )
+
+
 def test_nullable_field() -> None:
     dto_type = DjangoModelDTO[ModelWithFields]
     field_defs = {

@@ -120,7 +120,7 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
                 # fast path for known supported validators
                 # nullable fields do not support these constraints and for enum the
                 # constraint is defined implicitly by its values
-                if not field.null and "enum" not in constraints:
+                if not (field.null or "enum" in constraints or cls.config.partial):
                     if isinstance(validator, validators.MinValueValidator):
                         constraints["gt"] = validator.limit_value
                     elif isinstance(validator, validators.MinLengthValidator):
