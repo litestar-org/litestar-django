@@ -175,6 +175,26 @@ def test_validate() -> None:
 
 
 @pytest.mark.django_db(transaction=True)
+def test_validate_partial() -> None:
+    @post(
+        "/",
+        sync_to_thread=True,
+        dto=DjangoModelDTO[Annotated[Author, DTOConfig(partial=True)]],
+        return_dto=DjangoModelDTO[Author],
+    )
+    def handler(data: Author) -> Author:
+        data.save()
+        return Author.objects.prefetch_related("books").get(id=data.id)
+
+    with create_test_client([handler]) as client:
+        author_name = secrets.token_hex()
+        res = client.post("/", json={"name": author_name})
+        assert res.status_code == 201
+        author = Author.objects.get(name=author_name)
+        assert res.json() == {"id": author.id, "name": author_name, "books": []}
+
+
+@pytest.mark.django_db(transaction=True)
 def test_enumfields() -> None:
     @post(
         "/",
