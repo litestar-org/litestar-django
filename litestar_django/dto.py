@@ -213,6 +213,10 @@ class DjangoModelDTO(AbstractDTO[T], Generic[T]):
                     # we need a concrete field to infer the type though, so we construct
                     # it from the type of the related primary key field
                     related_field = fk_tuple[1]
+                    # follow inherited fk relationships
+                    while isinstance(related_field, ForeignKey):
+                        related_field = related_field.related_fields[0][1]
+
                     id_field = type(related_field)(
                         name=name,
                         null=field.null,
